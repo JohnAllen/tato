@@ -1,11 +1,11 @@
 [package]
-name = "lingospring-tatoeba"
+name = "lingospring-tatoeba-html"
 version = "0.1.0"
 authors = ["John Allen"]
 edition = "2021"
 
 
-
 [dependencies]
 csv = "1.1"
 serde = { version = "1.0.136", features = ["derive"] }
+typed-html = { git = "https://github.com/bodil/typed-html", rev = "4c13ecca" }
