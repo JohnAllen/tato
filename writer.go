@@ -33,7 +33,7 @@ func stripContent(content string) string {
 
 func main() {
 
-	results, err := os.ReadDir("/Users/john/lingospring-tatoeba-html/data")
+	results, err := os.ReadDir("/root/tato/data")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -49,11 +49,12 @@ func main() {
 		srcLangName = strings.TrimSuffix(srcLangName, " ")
 		srcLangName = strings.Replace(srcLangName, " ", "-", -1)
 
-		completeFilePath := "/Users/john/lingospring-tatoeba-html/data/" + result.Name()
+		completeFilePath := "/root/tato/data/" + result.Name()
 		file, err := os.Open(completeFilePath)
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println("Opened file: ", file.Name())
 
 		reader := csv.NewReader(file)
 		reader.FieldsPerRecord = -1
@@ -69,24 +70,24 @@ func main() {
 				fmt.Errorf("%v skipping as less than 4", completeFilePath)
 				continue
 			}
-			if counter > 10000 {
+			if counter > 1_000_000 {
 				break
 			}
 			firstLangContent := lineParts[1]
 			firstLangContentUrl := stripContent(firstLangContent)
 			secondLangContent := lineParts[3]
-			//secondLangContentUrl := stripContent(secondLangContent)
 			srcLine := "How to say \"" + firstLangContent + "\" in " + srcLangName
 			tgtContent := secondLangContent
 
 			data := map[string]interface{}{
-				"srcLine":    srcLine,
-				"tgtContent": tgtContent,
+				"srcLangName": srcLangName,
+				"srcLine":     srcLine,
+				"tgtContent":  tgtContent,
 			}
-			var contentPageString = `<!doctype html><html lang='en'><head><meta charset='utwf-8'>  <title>LingoSpring</title></head><body><header
->  <h1><a href='/'>LingoSpring</a></h1></header><main>  <h2>{{.srcLine}}</h2><p>{{.tgtContent}}</p></main><footer></footer></body></html>`
+			var contentPageString = `<!doctype html><html lang='en'><head><meta charset='utwf-8'>  <title>RareLanguages.net</title></head><body><header
+>  <h1><a href='/'>RareLanguages.net</a></h1></header><main>  <h2>{{.srcLine}}</h2><p>{{.tgtContent}}</p></main><footer></footer></body></html>`
 			firstString := getHtmlString(contentPageString, data)
-			filePath := "/Users/john/lingospring-tatoeba-html/html/how-to-say-" + firstLangContentUrl + "-in-" + tgtLangName + ".html"
+			filePath := "/root/tato/static/how-to-say-" + firstLangContentUrl + "-in-" + tgtLangName + ".html"
 			writeHtmlStringToFile(filePath, firstString)
 			counter++
 		}
@@ -96,6 +97,7 @@ func main() {
 }
 
 func writeHtmlStringToFile(filePath string, html string) bool {
+	fmt.Println("Writing to file: ", filePath)
 	err := os.WriteFile(filePath, []byte(html), 0644)
 	if err != nil {
 		fmt.Println(err)
@@ -118,7 +120,7 @@ func createSrcTgtFile(record []string, baseFilePath string, srcLangName string, 
 
 func getHtmlString(a string, b map[string]interface{}) string {
 
-	tmpl := template.Must(template.New("content-page.html").Parse(a))
+	tmpl := template.Must(template.New("temp").Parse(a))
 	buf := &bytes.Buffer{}
 	err := tmpl.Execute(buf, b)
 	if err != nil {
